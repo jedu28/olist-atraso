@@ -6,6 +6,7 @@ performance real.
 """
 from pathlib import Path
 
+import joblib
 import pandas as pd
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
@@ -15,6 +16,8 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 from src.features import build_dataset
+
+MODEL_PATH = Path(__file__).resolve().parents[1] / "data" / "processed" / "pipeline.joblib"
 
 NUM_FEATURES = [
     "preco_total",
@@ -62,6 +65,10 @@ def main():
     print(f"PR-AUC: {average_precision_score(y_test, proba):.4f}")
     print(f"Recall: {recall_score(y_test, preds):.4f}")
     print(classification_report(y_test, preds))
+
+    MODEL_PATH.parent.mkdir(parents=True, exist_ok=True)
+    joblib.dump(pipeline, MODEL_PATH)
+    print(f"Pipeline salvo em {MODEL_PATH}")
 
     return pipeline
 
