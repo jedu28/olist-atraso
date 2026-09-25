@@ -1,0 +1,11 @@
+pandas
+numpy
+scikit-learn
+lightgbm
+mlflow
+fastapi
+uvicorn
+mangum
+pydantic
+pytest
+python-dotenv
