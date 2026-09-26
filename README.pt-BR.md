@@ -1,5 +1,7 @@
 # olist-atraso — previsão de atraso de entrega na hora da compra
 
+[![CI](https://github.com/jedu28/olist-atraso/actions/workflows/ci.yml/badge.svg)](https://github.com/jedu28/olist-atraso/actions/workflows/ci.yml)
+
 [English](README.md) · **Português**
 
 Um modelo de machine learning que sinaliza, **no checkout**, quais pedidos de e-commerce têm risco de chegar depois da data prometida. Usa o [dataset público da Olist](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce) (96 mil pedidos entregues, Brasil, 2016–2018).

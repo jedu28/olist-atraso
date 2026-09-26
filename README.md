@@ -1,5 +1,7 @@
 # olist-atraso — predicting late deliveries at purchase time
 
+[![CI](https://github.com/jedu28/olist-atraso/actions/workflows/ci.yml/badge.svg)](https://github.com/jedu28/olist-atraso/actions/workflows/ci.yml)
+
 **English** · [Português](README.pt-BR.md)
 
 A machine-learning model that flags, **at checkout**, which e-commerce orders are likely to arrive after the promised date, built on the public [Olist dataset](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce) (96k delivered orders, Brazil, 2016–2018).
