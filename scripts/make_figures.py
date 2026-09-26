@@ -5,7 +5,7 @@
 
 Saídas:
     docs/figures/{en,pt}/*.png   figuras da documentação
-    docs/figures/linkedin/*.png  cards 1080×1350 (4:5) para o post
+    docs/figures/linkedin/*.png  cards 1080×1350 (4:5) para o post + carousel.pdf
     docs/results.json            números usados no texto da documentação
 """
 from __future__ import annotations
@@ -24,6 +24,7 @@ import numpy as np
 import pandas as pd
 from matplotlib.lines import Line2D
 from matplotlib.ticker import FuncFormatter, MaxNLocator, MultipleLocator, PercentFormatter
+from PIL import Image
 from sklearn.metrics import precision_recall_curve, roc_auc_score
 from sklearn.model_selection import StratifiedKFold, TimeSeriesSplit, cross_val_predict, cross_val_score
 
@@ -466,7 +467,8 @@ def doc_figures(r, d, lang, out_dir: Path):
 
     fig, axes = plt.subplots(1, 3, figsize=(12, 3.4), gridspec_kw={"wspace": 0.15})
     draw_versions(axes, r, d, t)
-    axes[0].set_yticklabels([t["v_names"][v] for v in list(d["test"])[::-1]])
+    rotulos = [t["v_names"][v] for v in list(d["test"])[::-1]]
+    axes[0].set_yticks(range(len(rotulos)), rotulos)
     fig.suptitle(t["versions_title"], x=0.01, ha="left", fontweight="bold", y=1.04)
     save(fig, "05_versions_comparison")
 
@@ -570,6 +572,10 @@ def linkedin_cards(r, d, out_dir: Path):
     draw_tuning(ax, r, d, t)
     ax.set_title("ROC-AUC (0.5 = coin flip)", fontsize=13.5, color=INK_2, fontweight="normal")
     save(fig, "06_tuning_transfer")
+
+    # Carrossel: no LinkedIn, um PDF vira um post deslizável
+    paginas = [Image.open(p).convert("RGB") for p in sorted(out_dir.glob("0*.png"))]
+    paginas[0].save(out_dir / "carousel.pdf", save_all=True, append_images=paginas[1:], resolution=CARD_DPI)
 
 
 def export_results(r, d):
