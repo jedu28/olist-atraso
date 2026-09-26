@@ -528,7 +528,7 @@ def linkedin_cards(r, d, out_dir: Path):
 
     # 2 — prometido x entregue
     fig = _card("A threshold picked on\nrandom CV breaks in production",
-                "Both cuts promised 50% recall on the training data.\nOnly the time-aware one kept the promise.")
+                f"Both cuts promised {MIN_RECALL:.0%} recall on the training data.\nOnly the time-aware one kept the promise.")
     ax = fig.add_axes([0.24, 0.25, 0.68, 0.4])
     draw_promise(ax, r, d, t, big=True)
     ax.set_title("")

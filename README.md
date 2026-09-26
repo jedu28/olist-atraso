@@ -17,18 +17,18 @@ The project's focus goes beyond the model. It is about **turning a score into a 
 
 Evaluated on the **most recent 20% of orders** (May 26 – Aug 29, 2018), which the model never saw:
 
-| | Default cut (0.5) | **Chosen cut (0.28)** |
+| | Default cut (0.5) | **Chosen cut (0.23)** |
 |---|---:|---:|
-| Late orders caught (recall) | 7.1% | **59.7%** (610 of 1,021) |
-| Precision among flagged orders | 11.8% | **10.7%** (2.0× the 5.3% base rate) |
-| Orders flagged | 3.2% | **29.7%** |
+| Late orders caught (recall) | 7.1% | **74.3%** (759 of 1,021) |
+| Precision among flagged orders | 11.8% | **9.5%** (1.8× the 5.3% base rate) |
+| Orders flagged | 3.2% | **41.6%** |
 
-Same model, same scores: only the cut changed. The cut was picked on **temporal out-of-fold predictions of the training set**. The test set was never used to choose it.
+Same model, same scores: only the cut changed. The business rule asks for at least 60% of late orders caught with the fewest false alarms, and the cut was picked on **temporal out-of-fold predictions of the training set**. The test set was never used to choose it.
 
 ## What I learned
 
 1. **The 0.5 threshold is not neutral.** With ~8% late orders, few scores ever cross 0.5, so the "default" classifier misses 93% of delays even though its ranking is informative (ROC-AUC 0.72–0.76).
-2. **Where you choose the threshold matters as much as how.** Both cuts below promised 50% recall on training data. The one chosen on random CV delivered **7%** on future months; the one chosen on time-ordered CV delivered **60%**.
+2. **Where you choose the threshold matters as much as how.** Both cuts in the chart above promised 60% recall on training data. The one chosen on random CV delivered **14%** on future months; the one chosen on time-ordered CV delivered **74%**.
 3. **I found a leak in my own feature.** The seller's historical late rate counted orders that were still in transit at purchase time. Fixing it made the feature look weaker (ROC-AUC 0.616 → 0.564) and the model *better* on the test months (0.748 → 0.761).
 4. **Hyperparameter tuning won the validation but lost the future.** Optuna improved temporal CV (0.603 → 0.642), yet the untuned model ranked better on the test months (0.761 vs 0.724). I report this rather than quietly swapping models after looking at the test set.
 

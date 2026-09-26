@@ -17,18 +17,18 @@ O foco do projeto vai além do modelo. É **transformar um score numa decisão c
 
 Avaliação nos **20% de pedidos mais recentes** (26/05 a 29/08/2018), que o modelo nunca viu:
 
-| | Corte padrão (0.5) | **Corte escolhido (0.28)** |
+| | Corte padrão (0.5) | **Corte escolhido (0.23)** |
 |---|---:|---:|
-| Atrasos encontrados (recall) | 7,1% | **59,7%** (610 de 1.021) |
-| Precisão entre os sinalizados | 11,8% | **10,7%** (2,0× a taxa base de 5,3%) |
-| Pedidos sinalizados | 3,2% | **29,7%** |
+| Atrasos encontrados (recall) | 7,1% | **74,3%** (759 de 1.021) |
+| Precisão entre os sinalizados | 11,8% | **9,5%** (1,8× a taxa base de 5,3%) |
+| Pedidos sinalizados | 3,2% | **41,6%** |
 
-Mesmo modelo, mesmos scores: só o corte mudou. O corte foi escolhido em **previsões out-of-fold temporais do treino**. O teste nunca foi usado para escolhê-lo.
+Mesmo modelo, mesmos scores: só o corte mudou. A regra de negócio pede pelo menos 60% dos atrasos encontrados com o mínimo de alarmes falsos, e o corte foi escolhido em **previsões out-of-fold temporais do treino**. O teste nunca foi usado para escolhê-lo.
 
 ## O que aprendi
 
 1. **O threshold de 0.5 não é neutro.** Com ~8% de atrasos, poucos scores passam de 0.5. O classificador "padrão" perde 93% dos atrasos, mesmo com um ranking informativo (ROC-AUC 0,72–0,76).
-2. **Onde se escolhe o threshold importa tanto quanto como.** Os dois cortes do gráfico acima prometiam 50% de recall no treino. O escolhido em CV aleatória entregou **7%** nos meses futuros; o escolhido em CV temporal entregou **60%**.
+2. **Onde se escolhe o threshold importa tanto quanto como.** Os dois cortes do gráfico acima prometiam 60% de recall no treino. O escolhido em CV aleatória entregou **14%** nos meses futuros; o escolhido em CV temporal entregou **74%**.
 3. **Encontrei um vazamento na minha própria feature.** A taxa de atraso histórica do vendedor contava pedidos ainda em trânsito na data da compra. Corrigida, a feature parece mais fraca (ROC-AUC 0,616 → 0,564) e o modelo fica *melhor* nos meses de teste (0,748 → 0,761).
 4. **O tuning ganhou a validação e perdeu o futuro.** O Optuna melhorou a CV temporal (0,603 → 0,642), mas o modelo sem tuning ranqueou melhor nos meses de teste (0,761 contra 0,724). Eu documento isso em vez de trocar o modelo em silêncio depois de olhar o teste.
 

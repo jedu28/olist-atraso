@@ -22,7 +22,7 @@ N_TEMPORAL_SPLITS = 5  # folds da TimeSeriesSplit usada para escolher o threshol
 # --- Regra de negócio do threshold --------------------------------------------
 # Entre os cortes que pegam pelo menos esta fração dos atrasos, usa-se o de
 # maior precisão. Perder um atraso é o erro caro; alarme falso é o barato.
-MIN_RECALL = 0.5
+MIN_RECALL = 0.6
 
 # --- Contrato de dados --------------------------------------------------------
 ID_COLUMN = "order_id"

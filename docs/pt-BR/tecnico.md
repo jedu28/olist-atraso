@@ -100,7 +100,7 @@ Trocar agora para os parâmetros padrão seria escolher olhando o teste. Por iss
 
 O modelo devolve uma nota; a decisão precisa de um corte. A regra (`src/thresholds.py::choose_threshold`):
 
-> Entre todos os cortes com recall de pelo menos `MIN_RECALL` (0,5), usar o **mais alto**, ou seja, o mais preciso.
+> Entre todos os cortes com recall de pelo menos `MIN_RECALL` (0,6), usar o **mais alto**, ou seja, o mais preciso.
 
 A regra é aplicada às **previsões out-of-fold temporais do treino** (`temporal_oof_proba`): cada bloco do período de treino recebe a nota de um modelo treinado só com os blocos anteriores. O primeiro bloco não tem passado e é descartado.
 
@@ -110,13 +110,13 @@ Por que não 0,5? Com classe rara, poucos scores passam dele, e o `scale_pos_wei
 
 ![Distribuição dos scores](../figures/pt/02_score_distribution.png)
 
-Por que OOF temporal e não aleatório? Os dois "prometem" 50% de recall nos dados em que foram escolhidos. Só um cumpre a promessa nos meses futuros:
+Por que OOF temporal e não aleatório? Os dois "prometem" 60% de recall nos dados em que foram escolhidos. Só um cumpre a promessa nos meses futuros:
 
 | | OOF de CV aleatória (V3) | **OOF temporal (V4)** |
 |---|---:|---:|
-| Threshold | 0,504 | **0,276** |
-| Recall prometido (OOF) | 50,0% | 50,0% |
-| Recall entregue (teste) | 6,6% | **59,7%** |
+| Threshold | 0,420 | **0,232** |
+| Recall prometido (OOF) | 60,0% | 60,0% |
+| Recall entregue (teste) | 14,4% | **74,3%** |
 
 ![Prometido × entregue](../figures/pt/04_promised_vs_delivered.png)
 
@@ -128,20 +128,20 @@ O OOF temporal erra para o lado conservador (os modelos dos folds veem menos his
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | V1 | XGBoost padrão | 0,500 | 23,3% | 0,7% | 0,013 | 0,761 | 0,149 | 0,2% | 7 | 23 | 1.014 |
 | V2 | XGBoost tunado | 0,500 | 11,8% | 7,1% | 0,088 | 0,724 | 0,103 | 3,2% | 72 | 540 | 949 |
-| V3 | tunado + corte OOF aleatório | 0,504 | 11,6% | 6,6% | 0,084 | 0,724 | 0,103 | 3,0% | 67 | 512 | 954 |
-| **V4** | **tunado + corte OOF temporal** | **0,276** | **10,7%** | **59,7%** | **0,181** | 0,724 | 0,103 | **29,7%** | **610** | 5.114 | 411 |
+| V3 | tunado + corte OOF aleatório | 0,420 | 10,1% | 14,4% | 0,119 | 0,724 | 0,103 | 7,5% | 147 | 1.303 | 874 |
+| **V4** | **tunado + corte OOF temporal** | **0,232** | **9,5%** | **74,3%** | **0,168** | 0,724 | 0,103 | **41,6%** | **759** | 7.261 | 262 |
 
-V2 a V4 compartilham o ranking (mesmos ROC-AUC/PR-AUC) e diferem só no ponto de operação. A taxa base do teste é 5,3%, então a precisão da V4 é 2,0× a taxa base.
+V2 a V4 compartilham o ranking (mesmos ROC-AUC/PR-AUC) e diferem só no ponto de operação. A taxa base do teste é 5,3%, então a precisão da V4 é 1,8× a taxa base.
 
 **Estabilidade mensal da V4** (corte fixo):
 
 | Mês | Taxa de atraso | Sinalizados | Recall | Precisão |
 |---|---:|---:|---:|---:|
-| 2018-06 | 1,4% | 15,0% | 42,2% | 3,8% |
-| 2018-07 | 4,5% | 30,7% | 58,3% | 8,5% |
-| 2018-08 | 10,4% | 46,0% | 62,7% | 14,2% |
+| 2018-06 | 1,4% | 23,0% | 55,4% | 3,3% |
+| 2018-07 | 4,5% | 42,5% | 65,9% | 7,0% |
+| 2018-08 | 10,4% | 63,0% | 80,5% | 13,3% |
 
-Os scores acompanham o estresse da operação, então o volume de alertas triplica entre os meses. Para equipes com capacidade fixa, sinalizar os top-*k* por período é a alternativa natural.
+Os scores acompanham o estresse da operação, então o volume de alertas quase triplica de junho para agosto. Para equipes com capacidade fixa, sinalizar os top-*k* por período é a alternativa natural.
 
 ## 8. Arquitetura do código
 

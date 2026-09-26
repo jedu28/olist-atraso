@@ -100,7 +100,7 @@ Switching to the default parameters now would mean choosing on the test set. The
 
 The model outputs a score; the decision needs a cut. The rule (`src/thresholds.py::choose_threshold`):
 
-> Among all cuts whose recall is at least `MIN_RECALL` (0.5), take the **highest**, i.e. the most precise one.
+> Among all cuts whose recall is at least `MIN_RECALL` (0.6), take the **highest**, i.e. the most precise one.
 
 The rule is applied to **temporal out-of-fold predictions of the training set** (`temporal_oof_proba`): each block of the training period is scored by a model trained only on the blocks before it. The first block has no past and is dropped.
 
@@ -110,13 +110,13 @@ Why not 0.5? With a rare class, few scores cross it, and `scale_pos_weight` shif
 
 ![Score distributions](../figures/en/02_score_distribution.png)
 
-Why temporal OOF and not random OOF? Both "promise" 50% recall on the data they were chosen on. Only one keeps the promise on future months:
+Why temporal OOF and not random OOF? Both "promise" 60% recall on the data they were chosen on. Only one keeps the promise on future months:
 
 | | Random-CV OOF (V3) | **Temporal OOF (V4)** |
 |---|---:|---:|
-| Threshold | 0.504 | **0.276** |
-| Recall promised (OOF) | 50.0% | 50.0% |
-| Recall delivered (test) | 6.6% | **59.7%** |
+| Threshold | 0.420 | **0.232** |
+| Recall promised (OOF) | 60.0% | 60.0% |
+| Recall delivered (test) | 14.4% | **74.3%** |
 
 ![Promised vs delivered](../figures/en/04_promised_vs_delivered.png)
 
@@ -128,20 +128,20 @@ The temporal OOF errs on the conservative side (its fold models see less history
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | V1 | XGBoost default | 0.500 | 23.3% | 0.7% | 0.013 | 0.761 | 0.149 | 0.2% | 7 | 23 | 1,014 |
 | V2 | XGBoost tuned | 0.500 | 11.8% | 7.1% | 0.088 | 0.724 | 0.103 | 3.2% | 72 | 540 | 949 |
-| V3 | tuned + random-OOF cut | 0.504 | 11.6% | 6.6% | 0.084 | 0.724 | 0.103 | 3.0% | 67 | 512 | 954 |
-| **V4** | **tuned + temporal-OOF cut** | **0.276** | **10.7%** | **59.7%** | **0.181** | 0.724 | 0.103 | **29.7%** | **610** | 5,114 | 411 |
+| V3 | tuned + random-OOF cut | 0.420 | 10.1% | 14.4% | 0.119 | 0.724 | 0.103 | 7.5% | 147 | 1,303 | 874 |
+| **V4** | **tuned + temporal-OOF cut** | **0.232** | **9.5%** | **74.3%** | **0.168** | 0.724 | 0.103 | **41.6%** | **759** | 7,261 | 262 |
 
-V2–V4 share the ranking (same ROC-AUC/PR-AUC) and differ only in the operating point. The test base rate is 5.3%, so V4's precision is 2.0× the base rate.
+V2–V4 share the ranking (same ROC-AUC/PR-AUC) and differ only in the operating point. The test base rate is 5.3%, so V4's precision is 1.8× the base rate.
 
 **Monthly stability of V4** (fixed threshold):
 
 | Month | Late rate | Flagged | Recall | Precision |
 |---|---:|---:|---:|---:|
-| 2018-06 | 1.4% | 15.0% | 42.2% | 3.8% |
-| 2018-07 | 4.5% | 30.7% | 58.3% | 8.5% |
-| 2018-08 | 10.4% | 46.0% | 62.7% | 14.2% |
+| 2018-06 | 1.4% | 23.0% | 55.4% | 3.3% |
+| 2018-07 | 4.5% | 42.5% | 65.9% | 7.0% |
+| 2018-08 | 10.4% | 63.0% | 80.5% | 13.3% |
 
-Scores track operational stress, so alert volume varies threefold. For fixed-capacity teams, a top-*k*-per-period policy is the natural alternative.
+Scores track operational stress, so alert volume nearly triples from June to August. For fixed-capacity teams, a top-*k*-per-period policy is the natural alternative.
 
 ## 8. Code architecture
 
