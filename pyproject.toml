@@ -1,0 +1,25 @@
+[project]
+name = "olist-atraso"
+version = "0.2.0"
+description = "Previsão de atraso de entrega no e-commerce (dataset público Olist) com features point-in-time e threshold orientado a negócio."
+readme = "README.md"
+requires-python = ">=3.9"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 120
+target-version = "py39"
+extend-include = ["*.ipynb"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+ignore = ["E501"]  # linhas longas ficam a cargo do formatter; tabelas de dados às vezes passam
+
+[tool.ruff.lint.per-file-ignores]
+"notebooks/*" = ["E402", "B018"]  # imports depois do sys.path; expressão no fim da célula = display
+
+[tool.ruff.lint.isort]
+known-first-party = ["src"]

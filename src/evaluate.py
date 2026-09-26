@@ -1,62 +1,44 @@
-"""Avalia o pipeline treinado no split temporal de teste.
+"""Avalia o artefato salvo no split temporal de teste.
 
 Separado do train.py porque em produção você quer poder reavaliar um
-modelo já salvo sem re-treinar.
+modelo já salvo sem re-treinar. Usa o threshold salvo no artefato; passe
+`--threshold` só para simular outro ponto de operação.
+
+    python -m src.evaluate [--model-path PATH] [--threshold 0.2]
 """
+from __future__ import annotations
+
 import argparse
 from pathlib import Path
 
-import joblib
-from sklearn.metrics import (
-    average_precision_score,
-    classification_report,
-    confusion_matrix,
-    recall_score,
-    roc_auc_score,
-)
+from sklearn.metrics import classification_report
 
+from src.artifact import ModelArtifact
+from src.config import MODEL_PATH
 from src.features import build_dataset
-from src.train import CAT_FEATURES, NUM_FEATURES, temporal_split
+from src.metrics import classification_metrics, format_metrics
+from src.modeling import split_xy, temporal_split
 
-MODEL_PATH = Path(__file__).resolve().parents[1] / "data" / "processed" / "pipeline.joblib"
 
+def evaluate(artifact: ModelArtifact, threshold: float | None = None) -> dict[str, float]:
+    threshold = artifact.threshold if threshold is None else threshold
+    _, test_df = temporal_split(build_dataset())
+    X_test, y_test = split_xy(test_df)
 
-def evaluate(pipeline, X_test, y_test, threshold: float = 0.5) -> dict:
-    proba = pipeline.predict_proba(X_test)[:, 1]
-    preds = (proba >= threshold).astype(int)
-
-    metrics = {
-        "pr_auc": average_precision_score(y_test, proba),
-        "roc_auc": roc_auc_score(y_test, proba),
-        "recall": recall_score(y_test, preds),
-        "confusion_matrix": confusion_matrix(y_test, preds).tolist(),
-    }
-    print(classification_report(y_test, preds))
-    for key, value in metrics.items():
-        if key != "confusion_matrix":
-            print(f"{key}: {value:.4f}")
-    print(f"confusion_matrix: {metrics['confusion_matrix']}")
+    proba = artifact.predict_proba(X_test)
+    print(classification_report(y_test, proba >= threshold, target_names=["no prazo", "atrasado"]))
+    metrics = classification_metrics(y_test, proba, threshold)
+    print(format_metrics(metrics))
     return metrics
 
 
-def main():
-    parser = argparse.ArgumentParser()
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--model-path", type=Path, default=MODEL_PATH)
-    parser.add_argument("--threshold", type=float, default=0.5)
+    parser.add_argument("--threshold", type=float, default=None, help="sobrescreve o threshold salvo")
     args = parser.parse_args()
 
-    if not args.model_path.exists():
-        raise FileNotFoundError(
-            f"Nenhum modelo salvo em {args.model_path}. Rode `python -m src.train` primeiro "
-            "(ele precisa ser ajustado para salvar o pipeline com joblib.dump)."
-        )
-
-    pipeline = joblib.load(args.model_path)
-    df = build_dataset()
-    _, test_df = temporal_split(df)
-    X_test, y_test = test_df[NUM_FEATURES + CAT_FEATURES], test_df["atrasado"]
-
-    evaluate(pipeline, X_test, y_test, threshold=args.threshold)
+    evaluate(ModelArtifact.load(args.model_path), threshold=args.threshold)
 
 
 if __name__ == "__main__":
